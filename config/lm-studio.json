@@ -1,0 +1,19 @@
+{
+  "host": "http://localhost",
+  "port": 1234,
+  "models": {
+    "embedding": "all-MiniLM-L6-v2",
+    "completion": "meta-llama-3.1-8b-instruct-abliterated:2"
+  },
+  "settings": {
+    "max_tokens": -1,
+    "temperature": 0.7,
+    "top_p": 0.95,
+    "presence_penalty": 0,
+    "frequency_penalty": 0
+  },
+  "timeouts": {
+    "startup": 10000,
+    "request": 30000
+  }
+}

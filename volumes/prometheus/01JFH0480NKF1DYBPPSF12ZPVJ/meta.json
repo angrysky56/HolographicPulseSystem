@@ -1,0 +1,17 @@
+{
+	"ulid": "01JFH0480NKF1DYBPPSF12ZPVJ",
+	"minTime": 1734652801771,
+	"maxTime": 1734660000000,
+	"stats": {
+		"numSamples": 1731729,
+		"numSeries": 5979,
+		"numChunks": 15132
+	},
+	"compaction": {
+		"level": 1,
+		"sources": [
+			"01JFH0480NKF1DYBPPSF12ZPVJ"
+		]
+	},
+	"version": 1
+}

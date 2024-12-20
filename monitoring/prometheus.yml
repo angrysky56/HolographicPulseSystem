@@ -1,0 +1,17 @@
+global:
+  scrape_interval: 15s
+  scrape_timeout: 10s
+  evaluation_interval: 15s
+
+scrape_configs:
+  - job_name: 'mcp_memory'
+    static_configs:
+      - targets: ['mcp_memory:5000']
+
+  - job_name: 'lm_studio'
+    static_configs:
+      - targets: ['lm_studio:8080']
+
+  - job_name: 'api_gateway'
+    static_configs:
+      - targets: ['api_gateway:3000']

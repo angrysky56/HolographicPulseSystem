@@ -1,23 +1,4 @@
-# Dependencies
+# Just ignore LM Studio and node_modules
+LM-Studio-copy/
 node_modules/
 **/node_modules/
-
-# Large files and data directories
-LM-Studio-copy/
-volumes/
-
-# Specific large files that were causing issues
-volumes/etcd/
-volumes/milvus/
-volumes/minio/
-volumes/prometheus/
-volumes/**/*.log
-volumes/**/*.wal
-volumes/**/*.db
-volumes/**/*.bin
-volumes/**/xl.meta
-
-# IDE and system files
-.DS_Store
-.env
-*.log
