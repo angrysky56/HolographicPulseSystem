@@ -1,4 +1,9 @@
-# Just ignore LM Studio and node_modules
-LM-Studio-copy/
+# Dependencies
 node_modules/
 **/node_modules/
+
+# LM Studio binaries
+LM-Studio-copy/
+
+# Docker volumes and container data
+volumes/
