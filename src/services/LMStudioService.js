@@ -1,65 +1,86 @@
-import fetch from 'node-fetch';
-
 export class LMStudioService {
-    constructor(config = {}) {
-        this.baseUrl = 'http://localhost:1234';  // Updated to match your setup
-        this.embeddingModel = "text-embedding-nomic-embed-text-v1.5@q8_0";
-        this.chatModel = "meta-llama-3.1-8b-instruct-abilitated";
+    constructor() {
+        this.baseUrl = process.env.LM_STUDIO_URL || 'http://192.168.1.82:1234/v1';
+        this.embeddingModel = 'text-embedding-nomic-embed-text-v1.5@Q8_0';
     }
 
     async generateEmbeddings(text) {
-        try {
-            console.log('Generating embeddings for:', text.substring(0, 50) + '...');
-            
-            const response = await fetch(`${this.baseUrl}/v1/embeddings`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    input: text,
-                    model: this.embeddingModel
-                })
-            });
+        const response = await fetch(`${this.baseUrl}/embeddings`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                input: text,
+                model: this.embeddingModel
+            })
+        });
 
-            if (!response.ok) {
-                throw new Error(`Embedding generation failed: ${await response.text()}`);
-            }
-
-            const data = await response.json();
-            console.log('Successfully generated embeddings');
-            return data.data[0].embedding;
-        } catch (error) {
-            console.error('Error generating embeddings:', error);
-            // Return a default embedding if needed
-            return new Array(384).fill(0);
+        if (!response.ok) {
+            throw new Error(`Failed to generate embeddings: ${response.statusText}`);
         }
+
+        const result = await response.json();
+        return result.data[0].embedding;
     }
 
-    async generateResponse(prompt) {
-        try {
-            console.log('Generating response for:', prompt.substring(0, 50) + '...');
-            
-            const response = await fetch(`${this.baseUrl}/v1/chat/completions`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    messages: [{
+    async analyzeContext(text, context) {
+        const response = await fetch(`${this.baseUrl}/chat/completions`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                messages: [
+                    {
+                        role: "system",
+                        content: `You are an AI analysis agent. Context: ${context}`
+                    },
+                    {
+                        role: "user",
+                        content: `Analyze this: ${text}`
+                    }
+                ],
+                temperature: 0.7,
+                max_tokens: 500
+            })
+        });
+
+        if (!response.ok) {
+            throw new Error(`Failed to analyze context: ${response.statusText}`);
+        }
+
+        const result = await response.json();
+        return {
+            analysis: result.choices[0].message.content,
+            confidence: 0.9,
+            timestamp: new Date()
+        };
+    }
+
+    async generateResponse(prompt, params = {}) {
+        const response = await fetch(`${this.baseUrl}/chat/completions`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                messages: [
+                    {
                         role: "user",
                         content: prompt
-                    }],
-                    model: this.chatModel,
-                    temperature: 0.7
-                })
-            });
+                    }
+                ],
+                temperature: params.temperature || 0.7,
+                max_tokens: params.max_tokens || 500
+            })
+        });
 
-            if (!response.ok) {
-                throw new Error(`Response generation failed: ${await response.text()}`);
-            }
-
-            const data = await response.json();
-            return data.choices[0].message.content;
-        } catch (error) {
-            console.error('Error generating response:', error);
-            return `Error generating response: ${error.message}`;
+        if (!response.ok) {
+            throw new Error(`Failed to generate response: ${response.statusText}`);
         }
+
+        const result = await response.json();
+        return result.choices[0].message.content;
     }
 }

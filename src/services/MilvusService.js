@@ -2,7 +2,7 @@ import { MilvusClient } from '@zilliz/milvus2-sdk-node';
 
 export class MilvusService {
     constructor(collectionName = 'agent_memory', dimension = 384) {
-        const host = process.env.MILVUS_HOST || 'localhost';
+        const host = process.env.MILVUS_HOST || 'standalone';  // Using Docker service name
         const port = process.env.MILVUS_PORT || '19530';
         
         this.client = new MilvusClient({
@@ -13,8 +13,8 @@ export class MilvusService {
         
         this.collectionName = collectionName;
         this.dimension = dimension;
-        this.retryAttempts = 3;
-        this.retryDelay = 2000;
+        this.retryAttempts = 5;  // Increased retries
+        this.retryDelay = 5000;  // Increased delay
     }
 
     async initialize() {
@@ -53,10 +53,8 @@ export class MilvusService {
                     collection_name: this.collectionName
                 });
                 console.log('Dropped existing collection');
-                // Wait for collection to be fully dropped
-                await this.sleep(2000);
+                await this.sleep(2000);  // Wait for collection to be fully dropped
             } catch (error) {
-                // Ignore errors if collection doesn't exist
                 console.log('No existing collection to drop');
             }
 
@@ -90,9 +88,7 @@ export class MilvusService {
 
             await this.client.createCollection(schema);
             console.log('Collection created successfully');
-            
-            // Wait for collection to be fully created
-            await this.sleep(2000);
+            await this.sleep(2000);  // Wait for collection creation
 
             // Create index
             const indexParams = {
@@ -107,9 +103,7 @@ export class MilvusService {
             
             await this.client.createIndex(indexParams);
             console.log('Index created successfully');
-            
-            // Wait for index to be built
-            await this.sleep(5000);
+            await this.sleep(5000);  // Wait for index to be built
             console.log('Index built successfully');
 
             // Load collection
@@ -184,6 +178,18 @@ export class MilvusService {
             return await this.insertVector(id, vector, metadata);
         } catch (error) {
             console.error('Error updating vector:', error);
+            throw error;
+        }
+    }
+
+    async getCollectionStats() {
+        try {
+            const stats = await this.client.getCollectionStatistics({
+                collection_name: this.collectionName
+            });
+            return stats;
+        } catch (error) {
+            console.error('Error getting collection stats:', error);
             throw error;
         }
     }

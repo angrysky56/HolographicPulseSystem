@@ -1,5 +1,3 @@
-version: '3.8'
-
 services:
   etcd:
     container_name: milvus-etcd
@@ -12,6 +10,8 @@ services:
     volumes:
       - ./volumes/etcd:/etcd
     command: etcd -advertise-client-urls=http://127.0.0.1:2379 -listen-client-urls http://0.0.0.0:2379 --data-dir /etcd
+    networks:
+      - milvus-net
 
   minio:
     container_name: milvus-minio
@@ -27,6 +27,8 @@ services:
       - "9000:9000"
       - "9001:9001"
     command: minio server /minio_data
+    networks:
+      - milvus-net
 
   standalone:
     container_name: milvus-standalone
@@ -43,6 +45,8 @@ services:
     depends_on:
       - "etcd"
       - "minio"
+    networks:
+      - milvus-net
 
   prometheus:
     image: prom/prometheus:latest
@@ -55,6 +59,9 @@ services:
       - '--config.file=/etc/prometheus/prometheus.yml'
       - '--storage.tsdb.path=/prometheus'
       - '--web.enable-admin-api'
+    networks:
+      - milvus-net
+      - monitoring
 
   grafana:
     image: grafana/grafana:latest
@@ -69,3 +76,46 @@ services:
       - GF_PATHS_PROVISIONING=/etc/grafana/provisioning
     depends_on:
       - prometheus
+    networks:
+      - monitoring
+
+  node-exporter:
+    image: prom/node-exporter:latest
+    container_name: node-exporter
+    ports:
+      - "9100:9100"
+    command:
+      - '--collector.disable-defaults'
+      - '--collector.cpu'
+      - '--collector.meminfo'
+      - '--collector.loadavg'
+      - '--collector.netstat'
+    networks:
+      - monitoring
+
+  mcp_memory:
+    build: 
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "8001:8001"
+    volumes:
+      - ./src:/app/src
+    environment:
+      - NODE_ENV=development
+      - LM_STUDIO_URL=http://host.docker.internal:1234
+      - MILVUS_HOST=milvus-standalone
+      - MILVUS_PORT=19530
+    depends_on:
+      - standalone
+      - minio
+      - etcd
+    networks:
+      - milvus-net
+      - monitoring
+
+networks:
+  milvus-net:
+    driver: bridge
+  monitoring:
+    driver: bridge
