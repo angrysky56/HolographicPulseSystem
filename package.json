@@ -1,0 +1,23 @@
+{
+  "name": "holographic-pulse-system",
+  "version": "1.0.0",
+  "description": "Self-activating node memory framework with Essan integration",
+  "type": "module",
+  "main": "./src/index.js",
+  "scripts": {
+    "start": "node ./src/index.js",
+    "test:essan": "node test_essan.js",
+    "test:agents": "node test_agent_network.js",
+    "dev": "nodemon ./src/index.js"
+  },
+  "dependencies": {
+    "@zilliz/milvus2-sdk-node": "^2.3.0",
+    "cors": "^2.8.5",
+    "express": "^4.18.2",
+    "lodash": "^4.17.21",
+    "node-fetch": "^3.3.2"
+  },
+  "devDependencies": {
+    "nodemon": "^3.0.2"
+  }
+}
